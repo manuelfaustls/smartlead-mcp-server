@@ -268,14 +268,27 @@ export class StatisticsClient extends BaseSmartLeadClient {
 
   /**
    * Get campaign statistics by date range
-   * GET /campaigns/{campaign_id}/statistics/date-range
+   * Uses /analytics/day-wise-overall-stats-by-sent-time (docs: api.smartlead.ai)
+   * Requires start_date, end_date (YYYY-MM-DD); optional campaign_ids, timezone
    */
   async getCampaignStatisticsByDateRange(
     campaignId: number,
-    params: CampaignStatisticsRequest
+    params: CampaignStatisticsRequest & { start_date?: string; end_date?: string; timezone?: string }
   ): Promise<SuccessResponse> {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 90);
+    const analyticsParams = {
+      campaign_ids: String(campaignId),
+      start_date: params.start_date ?? start.toISOString().slice(0, 10),
+      end_date: params.end_date ?? end.toISOString().slice(0, 10),
+      timezone: params.timezone ?? 'Etc/GMT',
+    };
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/statistics/date-range`, { params }),
+      () =>
+        this.apiClient.get('/analytics/day-wise-overall-stats-by-sent-time', {
+          params: analyticsParams,
+        }),
       'get campaign statistics by date range'
     );
     return response.data;
@@ -298,14 +311,25 @@ export class StatisticsClient extends BaseSmartLeadClient {
 
   /**
    * Get campaign top level analytics
-   * GET /campaigns/{campaign_id}/analytics/top-level
+   * Uses /analytics/campaign/overall-stats with campaign_ids (docs: api.smartlead.ai)
+   * Pass campaign_ids to scope response to the given campaign
    */
   async getCampaignTopLevelAnalytics(
     campaignId: number,
     params?: CampaignTopLevelAnalyticsRequest
   ): Promise<SuccessResponse> {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 90);
+    const analyticsParams = {
+      campaign_ids: String(campaignId),
+      start_date: params?.start_date ?? start.toISOString().slice(0, 10),
+      end_date: params?.end_date ?? end.toISOString().slice(0, 10),
+      timezone: params?.timezone ?? 'Etc/GMT',
+      full_data: params?.full_data ?? true,
+    };
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/analytics/top-level`, { params }),
+      () => this.apiClient.get('/analytics/campaign/overall-stats', { params: analyticsParams }),
       'get campaign top level analytics'
     );
     return response.data;
@@ -313,15 +337,26 @@ export class StatisticsClient extends BaseSmartLeadClient {
 
   /**
    * Get campaign top level analytics by date range
-   * GET /campaigns/{campaign_id}/analytics/top-level/date-range
+   * Uses /analytics/day-wise-overall-stats-by-sent-time for date-filtered campaign analytics
    */
   async getCampaignTopLevelAnalyticsByDateRange(
     campaignId: number,
     params: CampaignTopLevelAnalyticsRequest
   ): Promise<SuccessResponse> {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 90);
+    const analyticsParams = {
+      campaign_ids: String(campaignId),
+      start_date: params.start_date ?? start.toISOString().slice(0, 10),
+      end_date: params.end_date ?? end.toISOString().slice(0, 10),
+      timezone: params.timezone ?? 'Etc/GMT',
+    };
     const response = await this.withRetry(
       () =>
-        this.apiClient.get(`/campaigns/${campaignId}/analytics/top-level/date-range`, { params }),
+        this.apiClient.get('/analytics/day-wise-overall-stats-by-sent-time', {
+          params: analyticsParams,
+        }),
       'get campaign top level analytics by date range'
     );
     return response.data;
@@ -329,14 +364,17 @@ export class StatisticsClient extends BaseSmartLeadClient {
 
   /**
    * Get campaign lead statistics
-   * GET /campaigns/{campaign_id}/statistics/leads
+   * Uses /analytics/campaign/status-stats (official Smartlead API - /campaigns/{id}/statistics/leads returns 404)
    */
   async getCampaignLeadStatistics(
     campaignId: number,
     params?: CampaignLeadStatisticsRequest
   ): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/statistics/leads`, { params }),
+      () =>
+        this.apiClient.get('/analytics/campaign/status-stats', {
+          params: params ?? {},
+        }),
       'get campaign lead statistics'
     );
     return response.data;
@@ -344,14 +382,14 @@ export class StatisticsClient extends BaseSmartLeadClient {
 
   /**
    * Get campaign mailbox statistics
-   * GET /campaigns/{campaign_id}/statistics/mailboxes
+   * Uses /analytics/mailbox/overall-stats (API accepts no params; /campaigns/{id}/statistics/mailboxes returns 404)
    */
   async getCampaignMailboxStatistics(
-    campaignId: number,
-    params?: CampaignMailboxStatisticsRequest
+    _campaignId: number,
+    _params?: CampaignMailboxStatisticsRequest
   ): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/statistics/mailboxes`, { params }),
+      () => this.apiClient.get('/analytics/mailbox/overall-stats'),
       'get campaign mailbox statistics'
     );
     return response.data;

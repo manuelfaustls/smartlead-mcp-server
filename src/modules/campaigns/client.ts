@@ -174,13 +174,21 @@ export class CampaignManagementClient extends BaseSmartLeadClient {
 
   /**
    * Fetch campaign analytics by date range
+   * Uses /analytics/campaign/overall-stats; the /campaigns/{id}/analytics
+   * route returns lifetime aggregates only, with no date-range support
    */
   async fetchCampaignAnalyticsByDateRange(
     campaignId: number,
     params: FetchCampaignAnalyticsByDateRangeRequest
   ): Promise<SuccessResponse> {
+    const analyticsParams = {
+      start_date: params.start_date,
+      end_date: params.end_date,
+      timezone: params.timezone ?? 'Etc/GMT',
+      full_data: true,
+    };
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/analytics`, { params }),
+      () => this.apiClient.get('/analytics/campaign/overall-stats', { params: analyticsParams }),
       'fetch campaign analytics by date range'
     );
     return response.data;
@@ -188,13 +196,24 @@ export class CampaignManagementClient extends BaseSmartLeadClient {
 
   /**
    * Get campaign sequence analytics
+   * Uses /analytics/campaign/response-stats (GET /campaigns/{id}/sequence/analytics returns 404)
    */
   async getCampaignSequenceAnalytics(
     campaignId: number,
     params?: GetCampaignSequenceAnalyticsRequest
   ): Promise<SuccessResponse> {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 90);
+    const analyticsParams = {
+      start_date: params?.start_date ?? start.toISOString().slice(0, 10),
+      end_date: params?.end_date ?? end.toISOString().slice(0, 10),
+      timezone: 'Etc/GMT',
+      full_data: true,
+    };
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/sequence/analytics`, { params }),
+      () =>
+        this.apiClient.get('/analytics/campaign/response-stats', { params: analyticsParams }),
       'get campaign sequence analytics'
     );
     return response.data;
