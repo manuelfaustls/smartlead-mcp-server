@@ -52,13 +52,24 @@ export class LeadClient extends BaseSmartLeadClient {
 
   /**
    * List all leads by campaign ID
+   * GET /campaigns/{campaign_id}/leads
    */
   async listLeadsByCampaign(
     campaignId: number,
-    params?: ListLeadsByCampaignRequest
+    params?: Omit<ListLeadsByCampaignRequest, 'campaign_id'>
   ): Promise<SuccessResponse> {
+    const queryParams = params
+      ? Object.fromEntries(
+          Object.entries({
+            limit: params.limit,
+            offset: params.offset,
+            status: params.status,
+            search: params.search,
+          }).filter(([, v]) => v !== undefined)
+        )
+      : {};
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/leads`, { params }),
+      () => this.apiClient.get(`/campaigns/${campaignId}/leads`, { params: queryParams }),
       'list leads by campaign'
     );
     return response.data;

@@ -478,6 +478,14 @@ export const WarmupStatsByEmailRequestSchema = z.object({
 export const CampaignTopLevelAnalyticsRequestSchema = z.object({
   /** Campaign ID */
   campaign_id: z.number(),
+  /** Start date (YYYY-MM-DD) for date-range queries */
+  start_date: z.string().optional(),
+  /** End date (YYYY-MM-DD) for date-range queries */
+  end_date: z.string().optional(),
+  /** Timezone for date handling */
+  timezone: z.string().optional(),
+  /** Include full data */
+  full_data: z.boolean().optional(),
 });
 
 /**
