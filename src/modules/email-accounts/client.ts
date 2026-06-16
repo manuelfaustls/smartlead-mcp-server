@@ -26,6 +26,13 @@ export interface UpdateEmailAccountRequest {
   name?: string;
   settings?: Record<string, unknown>;
   status?: 'active' | 'inactive' | 'warmup';
+  email?: string;
+  password?: string;
+  smtp_host?: string;
+  smtp_port?: number;
+  imap_host?: string;
+  imap_port?: number;
+  signature?: string; // HTML email signature; added in fork (upstream omits it)
 }
 
 export interface WarmupSettings {

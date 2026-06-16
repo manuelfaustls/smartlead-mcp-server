@@ -128,7 +128,7 @@ export class CampaignManagementClient extends BaseSmartLeadClient {
    */
   async getCampaignSequence(campaignId: number): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/sequence`),
+      () => this.apiClient.get(`/campaigns/${campaignId}/sequences`),
       'get campaign sequence'
     );
     return response.data;

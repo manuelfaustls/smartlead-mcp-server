@@ -231,7 +231,7 @@ export class LeadClient extends BaseSmartLeadClient {
    */
   async fetchLeadMessageHistory(campaignId: number, leadId: number): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/leads/${leadId}/messages`),
+      () => this.apiClient.get(`/campaigns/${campaignId}/leads/${leadId}/message-history`),
       'fetch lead message history'
     );
     return response.data;

@@ -50,6 +50,7 @@ const UpdateEmailAccountSchema = z.object({
   imap_host: z.string().optional(),
   imap_port: z.number().int().positive().optional(),
   name: z.string().optional(),
+  signature: z.string().optional(), // HTML email signature; added in fork (upstream omits it)
 });
 
 const GetEmailAccountByIdSchema = z.object({
