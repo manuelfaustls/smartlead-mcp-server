@@ -117,7 +117,7 @@ export class CampaignManagementClient extends BaseSmartLeadClient {
     sequence: EmailSequence
   ): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.post(`/campaigns/${campaignId}/sequence`, sequence),
+      () => this.apiClient.post(`/campaigns/${campaignId}/sequences`, sequence),
       'save campaign sequence'
     );
     return response.data;
@@ -166,7 +166,7 @@ export class CampaignManagementClient extends BaseSmartLeadClient {
     params?: ExportCampaignDataRequest
   ): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.get(`/campaigns/${campaignId}/export`, { params }),
+      () => this.apiClient.get(`/campaigns/${campaignId}/leads-export`, { params }),
       'export campaign data'
     );
     return response.data;

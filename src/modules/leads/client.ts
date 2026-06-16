@@ -80,7 +80,7 @@ export class LeadClient extends BaseSmartLeadClient {
    */
   async fetchLeadCategories(): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.get('/leads/categories'),
+      () => this.apiClient.get('/leads/fetch-categories'),
       'fetch lead categories'
     );
     return response.data;
@@ -91,7 +91,7 @@ export class LeadClient extends BaseSmartLeadClient {
    */
   async fetchLeadByEmail(email: string): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.get('/leads/email', { params: { email } }),
+      () => this.apiClient.get('/leads', { params: { email } }),
       'fetch lead by email'
     );
     return response.data;
