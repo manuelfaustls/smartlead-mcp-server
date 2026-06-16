@@ -176,7 +176,7 @@ export function registerEmailAccountTools(
         return formatSuccessResponse(
           'All email accounts retrieved successfully',
           result,
-          `Found ${(result.data as any)?.length || 0} email accounts`
+          `Found ${(result as any)?.length ?? (result.data as any)?.length ?? 0} email accounts`
         );
       } catch (error) {
         return handleError(error);

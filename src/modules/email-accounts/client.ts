@@ -121,13 +121,27 @@ export class EmailAccountManagementClient extends BaseSmartLeadClient {
   /**
    * Get All Email Accounts
    * GET /email-accounts
+   *
+   * The SmartLead API returns at most 100 accounts per request, so this
+   * auto-paginates with offset/limit and concatenates every page. Without
+   * this, callers silently only ever see the first 100 mailboxes.
    */
   async getAllEmailAccounts(): Promise<SuccessResponse> {
-    const response = await this.withRetry(
-      () => this.apiClient.get('/email-accounts'),
-      'get all email accounts'
-    );
-    return response.data;
+    const limit = 100;
+    let offset = 0;
+    const all: unknown[] = [];
+    // Safety cap (200 pages = 20k accounts) to avoid an unbounded loop.
+    for (let page = 0; page < 200; page++) {
+      const response = await this.withRetry(
+        () => this.apiClient.get('/email-accounts', { params: { offset, limit } }),
+        'get all email accounts'
+      );
+      const batch = Array.isArray(response.data) ? response.data : [];
+      all.push(...batch);
+      if (batch.length < limit) break;
+      offset += limit;
+    }
+    return all as unknown as SuccessResponse;
   }
 
   /**
