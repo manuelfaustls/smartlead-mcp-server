@@ -286,9 +286,11 @@ export function registerCampaignTools(
     async (params) => {
       try {
         const validatedParams = ExportCampaignDataRequestSchema.parse(params);
-        const result = await client.exportCampaignData(validatedParams.campaign_id, {
-          ...validatedParams,
-        });
+        // The /leads-export endpoint takes no query params (campaign_id lives in the
+        // path; passing format/start_date/end_date returns HTTP 400) and always
+        // returns CSV. Send only the path; the schema's format/date options are
+        // accepted for compatibility but not forwarded.
+        const result = await client.exportCampaignData(validatedParams.campaign_id);
         return formatSuccessResponse('Campaign data exported successfully', result);
       } catch (error) {
         return handleError(error);
