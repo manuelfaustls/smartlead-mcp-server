@@ -166,7 +166,7 @@ export class SmartLeadClient extends BaseSmartLeadClient {
     return this.campaigns.getCampaignSequenceAnalytics(campaignId, params);
   }
   async fetchAllCampaignsUsingLeadId(leadId: number) {
-    return this.campaigns.fetchAllCampaignsUsingLeadId({ lead_id: leadId });
+    return this.campaigns.fetchAllCampaignsUsingLeadId(leadId);
   }
 
   // Lead methods (delegate to leads module)

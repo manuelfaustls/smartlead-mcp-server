@@ -222,11 +222,9 @@ export class CampaignManagementClient extends BaseSmartLeadClient {
   /**
    * Fetch all campaigns using lead ID
    */
-  async fetchAllCampaignsUsingLeadId(
-    params: FetchAllCampaignsUsingLeadIdRequest
-  ): Promise<SuccessResponse> {
+  async fetchAllCampaignsUsingLeadId(leadId: number): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.get('/campaigns/by-lead', { params }),
+      () => this.apiClient.get(`/leads/${leadId}/campaigns`),
       'fetch all campaigns using lead ID'
     );
     return response.data;

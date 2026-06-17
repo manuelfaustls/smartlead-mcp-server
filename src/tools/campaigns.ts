@@ -357,7 +357,7 @@ export function registerCampaignTools(
         return formatSuccessResponse(
           'Campaigns fetched successfully',
           result,
-          `Found ${(result.data as any)?.campaigns?.length || 0} campaigns containing lead ID: ${validatedParams.lead_id}`
+          `Found ${Array.isArray(result) ? result.length : 0} campaigns containing lead ID: ${validatedParams.lead_id}`
         );
       } catch (error) {
         return handleError(error);
