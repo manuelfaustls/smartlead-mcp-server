@@ -168,7 +168,11 @@ export class LeadClient extends BaseSmartLeadClient {
    */
   async addLeadToGlobalBlocklist(email: string): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.post('/leads/global-blocklist', { email }),
+      () =>
+        this.apiClient.post('/leads/add-domain-block-list', {
+          domain_block_list: [email],
+          client_id: null,
+        }),
       'add lead to global blocklist'
     );
     return response.data;
@@ -194,7 +198,7 @@ export class LeadClient extends BaseSmartLeadClient {
     params?: FetchLeadsFromGlobalBlocklistParams
   ): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.get('/leads/global-blocklist', { params }),
+      () => this.apiClient.get('/leads/get-domain-block-list', { params }),
       'fetch leads from global blocklist'
     );
     return response.data;
