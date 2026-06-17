@@ -209,6 +209,9 @@ export class SmartLeadClient extends BaseSmartLeadClient {
   async addLeadToGlobalBlocklist(email: string) {
     return this.leads.addLeadToGlobalBlocklist(email);
   }
+  async removeFromGlobalBlocklist(emailOrDomain: string) {
+    return this.leads.removeFromGlobalBlocklist(emailOrDomain);
+  }
   async fetchAllLeadsFromAccount(params?: ListLeadsRequest) {
     return this.leads.fetchAllLeadsFromAccount(params);
   }

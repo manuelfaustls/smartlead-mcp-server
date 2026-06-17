@@ -950,6 +950,9 @@ export const ForwardReplyRequestSchema = z.object({
 
 export const FetchAllLeadsFromAccountRequestSchema = z.object({});
 export const FetchLeadsFromGlobalBlocklistRequestSchema = z.object({});
+export const RemoveFromGlobalBlocklistRequestSchema = z.object({
+  email_or_domain: z.string(),
+});
 
 // Lead management types
 export type ListLeadsByCampaignRequest = z.infer<typeof ListLeadsByCampaignRequestSchema>;
@@ -965,6 +968,9 @@ export type UnsubscribeLeadFromAllCampaignsRequest = z.infer<
   typeof UnsubscribeLeadFromAllCampaignsRequestSchema
 >;
 export type AddLeadToGlobalBlocklistRequest = z.infer<typeof AddLeadToGlobalBlocklistRequestSchema>;
+export type RemoveFromGlobalBlocklistRequest = z.infer<
+  typeof RemoveFromGlobalBlocklistRequestSchema
+>;
 export type UpdateLeadByIdRequest = z.infer<typeof UpdateLeadByIdRequestSchema>;
 export type UpdateLeadCategoryRequest = z.infer<typeof UpdateLeadCategoryRequestSchema>;
 export type FetchLeadMessageHistoryRequest = z.infer<typeof FetchLeadMessageHistoryRequestSchema>;

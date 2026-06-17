@@ -101,8 +101,20 @@ export class LeadClient extends BaseSmartLeadClient {
    * Add leads to a campaign by ID
    */
   async addLeadsToCampaign(campaignId: number, leads: Lead[]): Promise<SuccessResponse> {
+    // The API expects the array under `lead_list` (not `leads`) and uses
+    // company_name / phone_number / custom_fields. Map the tool's field names.
+    const lead_list = (leads as any[]).map((l) => ({
+      email: l.email,
+      first_name: l.first_name,
+      last_name: l.last_name,
+      company_name: l.company_name ?? l.company,
+      phone_number: l.phone_number ?? l.phone,
+      custom_fields:
+        l.custom_fields ??
+        (l.title || l.job_title ? { job_title: l.title ?? l.job_title } : undefined),
+    }));
     const response = await this.withRetry(
-      () => this.apiClient.post(`/campaigns/${campaignId}/leads`, { leads }),
+      () => this.apiClient.post(`/campaigns/${campaignId}/leads`, { lead_list }),
       'add leads to campaign'
     );
     return response.data;
@@ -179,6 +191,33 @@ export class LeadClient extends BaseSmartLeadClient {
   }
 
   /**
+   * Remove an email/domain from the global block list.
+   * The API deletes by entry id, so resolve the id via get-domain-block-list first.
+   */
+  async removeFromGlobalBlocklist(emailOrDomain: string): Promise<SuccessResponse> {
+    const list = await this.withRetry(
+      () =>
+        this.apiClient.get('/leads/get-domain-block-list', {
+          params: { filter_email_or_domain: emailOrDomain, limit: 1000 },
+        }),
+      'fetch global blocklist for removal'
+    );
+    const entries = Array.isArray(list.data) ? list.data : [];
+    const match = entries.find((e: any) => e.email_or_domain === emailOrDomain);
+    if (!match) {
+      return {
+        ok: false,
+        message: `Not found on global block list: ${emailOrDomain}`,
+      } as unknown as SuccessResponse;
+    }
+    const response = await this.withRetry(
+      () => this.apiClient.delete('/leads/delete-domain-block-list', { params: { id: match.id } }),
+      'remove from global blocklist'
+    );
+    return response.data;
+  }
+
+  /**
    * Fetch all leads from entire account
    */
   async fetchAllLeadsFromAccount(
@@ -223,8 +262,27 @@ export class LeadClient extends BaseSmartLeadClient {
     leadId: number,
     category: string
   ): Promise<SuccessResponse> {
+    // The API expects a numeric `category_id`, not the label string. Resolve the
+    // label to its workspace-specific id via fetch-categories; a numeric id passed
+    // as a string is used directly.
+    let categoryId = Number(category);
+    if (Number.isNaN(categoryId)) {
+      const cats = await this.apiClient.get('/leads/fetch-categories');
+      const list = Array.isArray(cats.data) ? cats.data : [];
+      const match = list.find(
+        (c: any) => String(c.name).toLowerCase() === String(category).toLowerCase()
+      );
+      if (!match) {
+        throw new Error(`Unknown lead category "${category}". Use one from fetch-categories.`);
+      }
+      categoryId = match.id;
+    }
     const response = await this.withRetry(
-      () => this.apiClient.post(`/campaigns/${campaignId}/leads/${leadId}/category`, { category }),
+      () =>
+        this.apiClient.post(`/campaigns/${campaignId}/leads/${leadId}/category`, {
+          category_id: categoryId,
+          pause_lead: false,
+        }),
       'update lead category'
     );
     return response.data;

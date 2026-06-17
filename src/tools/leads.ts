@@ -22,6 +22,7 @@ import {
   ForwardReplyRequestSchema,
   ListLeadsByCampaignRequestSchema,
   PauseLeadByCampaignRequestSchema,
+  RemoveFromGlobalBlocklistRequestSchema,
   ReplyToLeadFromMasterInboxRequestSchema,
   ResumeLeadByCampaignRequestSchema,
   UnsubscribeLeadFromAllCampaignsRequestSchema,
@@ -326,7 +327,31 @@ export function registerLeadTools(
         return formatSuccessResponse(
           'Global blocklist retrieved successfully',
           result,
-          `Found ${(result.data as any)?.blocked_leads?.length || 0} entries in global blocklist`
+          `Found ${Array.isArray(result) ? result.length : 0} entries in global blocklist`
+        );
+      } catch (error) {
+        return handleError(error);
+      }
+    }
+  );
+
+  // Remove from Global Blocklist Tool
+  server.registerTool(
+    'smartlead_remove_from_global_blocklist',
+    {
+      title: 'Remove from Global Blocklist',
+      description:
+        'Remove an email or domain from the global blocklist (resolves the entry id, then deletes it).',
+      inputSchema: RemoveFromGlobalBlocklistRequestSchema.shape,
+    },
+    async (params) => {
+      try {
+        const validatedParams = RemoveFromGlobalBlocklistRequestSchema.parse(params);
+        const result = await client.removeFromGlobalBlocklist(validatedParams.email_or_domain);
+        return formatSuccessResponse(
+          'Removed from global blocklist',
+          result,
+          `Removed ${validatedParams.email_or_domain} from global blocklist`
         );
       } catch (error) {
         return handleError(error);
