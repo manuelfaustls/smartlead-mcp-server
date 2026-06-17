@@ -371,7 +371,11 @@ export function registerLeadTools(
     async (params) => {
       try {
         const validatedParams = UpdateLeadByIdRequestSchema.parse(params);
-        const result = await client.updateLeadById(validatedParams.lead_id, validatedParams);
+        const result = await client.updateLeadById(
+          validatedParams.campaign_id,
+          validatedParams.lead_id,
+          validatedParams
+        );
         return formatSuccessResponse('Lead updated successfully', result);
       } catch (error) {
         return handleError(error);

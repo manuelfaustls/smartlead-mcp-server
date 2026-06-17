@@ -49,6 +49,7 @@ import type {
   ListLeadsRequest,
   UpdateCampaignScheduleRequest,
   UpdateCampaignSettingsRequest,
+  UpdateLeadByIdRequest,
   UpdateLeadRequest,
 } from '../types.js';
 import { BaseSmartLeadClient } from './base.js';
@@ -218,8 +219,8 @@ export class SmartLeadClient extends BaseSmartLeadClient {
   async fetchLeadsFromGlobalBlocklist(params?: ListLeadsRequest) {
     return this.leads.fetchLeadsFromGlobalBlocklist(params);
   }
-  async updateLeadById(leadId: number, leadData: UpdateLeadRequest) {
-    return this.leads.updateLeadById(leadId, leadData);
+  async updateLeadById(campaignId: number, leadId: number, leadData: UpdateLeadByIdRequest) {
+    return this.leads.updateLeadById(campaignId, leadId, leadData);
   }
   async updateLeadCategory(campaignId: number, leadId: number, category: string) {
     return this.leads.updateLeadCategory(campaignId, leadId, category);

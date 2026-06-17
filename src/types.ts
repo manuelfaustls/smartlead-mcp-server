@@ -914,8 +914,9 @@ export const AddLeadToGlobalBlocklistRequestSchema = z.object({
 });
 
 export const UpdateLeadByIdRequestSchema = z.object({
+  campaign_id: z.number().int().positive(),
   lead_id: z.number().int().positive(),
-  email: z.string().email().optional(),
+  email: z.string().email(),
   first_name: z.string().optional(),
   last_name: z.string().optional(),
   company: z.string().optional(),

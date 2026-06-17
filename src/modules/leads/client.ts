@@ -246,9 +246,27 @@ export class LeadClient extends BaseSmartLeadClient {
   /**
    * Update lead using the lead ID
    */
-  async updateLeadById(leadId: number, leadData: UpdateLeadByIdRequest): Promise<SuccessResponse> {
+  async updateLeadById(
+    campaignId: number,
+    leadId: number,
+    leadData: UpdateLeadByIdRequest
+  ): Promise<SuccessResponse> {
+    // The API path is campaign-scoped: POST /campaigns/{cid}/leads/{lid}.
+    // Map the tool's field names to the API's (company_name / phone_number /
+    // custom_fields) and drop the routing ids from the body.
+    const l = leadData as any;
+    const body = {
+      email: l.email,
+      first_name: l.first_name,
+      last_name: l.last_name,
+      company_name: l.company_name ?? l.company,
+      phone_number: l.phone_number ?? l.phone,
+      custom_fields:
+        l.custom_fields ??
+        (l.title || l.job_title ? { job_title: l.title ?? l.job_title } : undefined),
+    };
     const response = await this.withRetry(
-      () => this.apiClient.post(`/leads/${leadId}`, leadData),
+      () => this.apiClient.post(`/campaigns/${campaignId}/leads/${leadId}`, body),
       'update lead by ID'
     );
     return response.data;
