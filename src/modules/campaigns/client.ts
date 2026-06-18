@@ -81,7 +81,8 @@ export class CampaignManagementClient extends BaseSmartLeadClient {
    */
   async updateCampaignStatus(campaignId: number, status: string): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.patch(`/campaigns/${campaignId}/status`, { status }),
+      // API expects POST (not PATCH) on /campaigns/{id}/status
+      () => this.apiClient.post(`/campaigns/${campaignId}/status`, { status }),
       'update campaign status'
     );
     return response.data;
@@ -117,7 +118,8 @@ export class CampaignManagementClient extends BaseSmartLeadClient {
     sequence: EmailSequence
   ): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.post(`/campaigns/${campaignId}/sequences`, sequence),
+      // API expects the array wrapped under "sequences"
+      () => this.apiClient.post(`/campaigns/${campaignId}/sequences`, { sequences: sequence }),
       'save campaign sequence'
     );
     return response.data;

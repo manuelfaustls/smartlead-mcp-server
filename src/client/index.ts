@@ -231,27 +231,16 @@ export class SmartLeadClient extends BaseSmartLeadClient {
   async replyToLeadFromMasterInbox(
     campaignId: number,
     leadId: number,
-    message: { subject: string; message: string }
+    params: { email_body: string }
   ) {
-    const replyMessage = {
-      campaign_id: campaignId,
-      lead_id: leadId,
-      message: message.message,
-      subject: message.subject,
-    };
-    return this.leads.replyToLeadFromMasterInbox(campaignId, leadId, replyMessage);
+    return this.leads.replyToLeadFromMasterInbox(campaignId, leadId, params);
   }
   async forwardReply(
     campaignId: number,
     leadId: number,
-    forwardData: { forward_to: string; message?: string }
+    forwardData: { to_emails: string }
   ) {
-    const forwardRequest = {
-      forward_to_email: forwardData.forward_to,
-      message: forwardData.message,
-      include_original: true,
-    };
-    return this.leads.forwardReply(campaignId, leadId, forwardRequest);
+    return this.leads.forwardReply(campaignId, leadId, forwardData);
   }
 
   // Analytics methods (delegate to analytics module)

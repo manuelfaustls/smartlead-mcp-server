@@ -91,8 +91,8 @@ export const UpdateCampaignScheduleRequestSchema = z.object({
   campaign_id: z.number(),
   /** Timezone for the campaign */
   timezone: z.string().optional(),
-  /** Days of the week to send emails (1-7, where 1 is Monday) */
-  days_of_the_week: z.array(z.number().min(1).max(7)).optional(),
+  /** Days of the week to send emails (0-6, where 0 is Sunday and 6 is Saturday) */
+  days_of_the_week: z.array(z.number().min(0).max(6)).optional(),
   /** Start hour in 24-hour format */
   start_hour: z.string().optional(),
   /** End hour in 24-hour format */
@@ -939,14 +939,12 @@ export const ReplyToLeadFromMasterInboxRequestSchema = z.object({
   campaign_id: z.number().int().positive(),
   lead_id: z.number().int().positive(),
   message: z.string(),
-  subject: z.string().optional(),
 });
 
 export const ForwardReplyRequestSchema = z.object({
   campaign_id: z.number().int().positive(),
   lead_id: z.number().int().positive(),
   forward_to: z.string().email(),
-  message: z.string().optional(),
 });
 
 export const FetchAllLeadsFromAccountRequestSchema = z.object({});

@@ -97,7 +97,11 @@ export class EmailAccountManagementClient extends BaseSmartLeadClient {
     params: { email_account_id: number }
   ): Promise<SuccessResponse> {
     const response = await this.withRetry(
-      () => this.apiClient.post(`/campaigns/${campaignId}/email-accounts`, params),
+      // API expects email_account_ids as an array, even for a single account
+      () =>
+        this.apiClient.post(`/campaigns/${campaignId}/email-accounts`, {
+          email_account_ids: [params.email_account_id],
+        }),
       'add email account to campaign'
     );
     return response.data;

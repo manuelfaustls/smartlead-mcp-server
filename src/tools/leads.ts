@@ -442,7 +442,7 @@ export function registerLeadTools(
     {
       title: 'Reply to Lead from Master Inbox',
       description:
-        'Send a reply to a lead from the master inbox with tracking and personalization.',
+        'Reply to a lead from the master inbox. The reply threads under the latest message in the lead conversation.',
       inputSchema: ReplyToLeadFromMasterInboxRequestSchema.shape,
     },
     async (params) => {
@@ -451,10 +451,7 @@ export function registerLeadTools(
         const result = await client.replyToLeadFromMasterInbox(
           validatedParams.campaign_id,
           validatedParams.lead_id,
-          {
-            subject: validatedParams.subject || '',
-            message: validatedParams.message,
-          }
+          { email_body: validatedParams.message }
         );
         return formatSuccessResponse('Successfully replied to lead', result);
       } catch (error) {
@@ -468,18 +465,22 @@ export function registerLeadTools(
     'smartlead_forward_reply',
     {
       title: 'Forward Reply',
-      description: 'Forward a lead reply to another email address or team member.',
+      description:
+        'Forward the latest message in a lead conversation to another email address or team member.',
       inputSchema: ForwardReplyRequestSchema.shape,
     },
     async (params) => {
       try {
         const validatedParams = ForwardReplyRequestSchema.parse(params);
-        const { campaign_id, lead_id, ...forwardData } = validatedParams;
-        const result = await client.forwardReply(campaign_id, lead_id, forwardData);
+        const result = await client.forwardReply(
+          validatedParams.campaign_id,
+          validatedParams.lead_id,
+          { to_emails: validatedParams.forward_to }
+        );
         return formatSuccessResponse(
           'Reply forwarded successfully',
           result,
-          `Reply from lead ID ${lead_id} forwarded successfully`
+          `Reply from lead ID ${validatedParams.lead_id} forwarded successfully`
         );
       } catch (error) {
         return handleError(error);

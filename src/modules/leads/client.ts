@@ -12,7 +12,6 @@ import { BaseSmartLeadClient } from '../../client/base.js';
 import type {
   Lead,
   ListLeadsByCampaignRequest,
-  ReplyToLeadFromMasterInboxRequest,
   SuccessResponse,
   UpdateLeadByIdRequest,
 } from '../../types.js';
@@ -30,10 +29,23 @@ export interface FetchLeadsFromGlobalBlocklistParams {
   offset?: number;
 }
 
+/** A single message in a lead's master-inbox thread (subset used for reply/forward). */
+export interface LeadHistoryMessage {
+  stats_id: string;
+  message_id: string;
+  time: string;
+  email_body: string;
+  type?: string;
+}
+
+/** Params for replying to a lead's thread (thread context is derived from history). */
+export interface ReplyToThreadParams {
+  email_body: string;
+}
+
+/** Params for forwarding a lead's latest message (thread context derived from history). */
 export interface ForwardReplyRequest {
-  forward_to_email: string;
-  message?: string;
-  include_original?: boolean;
+  to_emails: string;
 }
 
 /**
@@ -318,32 +330,73 @@ export class LeadClient extends BaseSmartLeadClient {
   }
 
   /**
-   * Reply to lead from master inbox via API
+   * Reply to a lead's thread from the master inbox.
+   * POST /campaigns/{id}/reply-email-thread needs the thread context (stats id +
+   * the message being replied to); we derive it from the latest message in the
+   * lead's history so the caller only supplies the reply body.
    */
   async replyToLeadFromMasterInbox(
     campaignId: number,
     leadId: number,
-    message: ReplyToLeadFromMasterInboxRequest
+    params: ReplyToThreadParams
   ): Promise<SuccessResponse> {
+    const last = await this.getLatestThreadMessage(campaignId, leadId);
     const response = await this.withRetry(
-      () => this.apiClient.post(`/campaigns/${campaignId}/leads/${leadId}/reply`, message),
+      () =>
+        this.apiClient.post(`/campaigns/${campaignId}/reply-email-thread`, {
+          email_stats_id: last.stats_id,
+          email_body: params.email_body,
+          reply_message_id: last.message_id,
+          reply_email_time: last.time,
+          reply_email_body: last.email_body,
+        }),
       'reply to lead from master inbox'
     );
     return response.data;
   }
 
   /**
-   * Forward a reply
+   * Forward the latest message in a lead's thread to another address.
+   * POST /campaigns/{id}/forward-email needs the thread's stats id + message id,
+   * both derived from the latest message in the lead's history.
    */
   async forwardReply(
     campaignId: number,
     leadId: number,
     forwardData: ForwardReplyRequest
   ): Promise<SuccessResponse> {
+    const last = await this.getLatestThreadMessage(campaignId, leadId);
     const response = await this.withRetry(
-      () => this.apiClient.post(`/campaigns/${campaignId}/leads/${leadId}/forward`, forwardData),
+      () =>
+        this.apiClient.post(`/campaigns/${campaignId}/forward-email`, {
+          stats_id: last.stats_id,
+          message_id: last.message_id,
+          to_emails: forwardData.to_emails,
+        }),
       'forward reply'
     );
     return response.data;
+  }
+
+  /**
+   * Fetch a lead's message history and return its most recent message, which is
+   * the one a reply threads under and the one a forward forwards. Throws on an
+   * empty thread (nothing to reply to or forward).
+   */
+  private async getLatestThreadMessage(
+    campaignId: number,
+    leadId: number
+  ): Promise<LeadHistoryMessage> {
+    const data = (await this.fetchLeadMessageHistory(campaignId, leadId)) as {
+      history?: LeadHistoryMessage[];
+    };
+    const messages = data?.history ?? [];
+    const last = messages[messages.length - 1];
+    if (!last) {
+      throw new Error(
+        `No message history for lead ${leadId} in campaign ${campaignId}; the thread is empty, nothing to reply to or forward.`
+      );
+    }
+    return last;
   }
 }
